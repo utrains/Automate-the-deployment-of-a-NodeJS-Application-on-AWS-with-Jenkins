@@ -36,10 +36,14 @@ pipeline {
         stage ('Push backend and frontend images to ECR'){
             steps {
                 sh '''
+                # Authenticate Docker with The frontend ECR repo 
+                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $FRONTEND_REPO
                 # Push The Frontend Image to the frontend ECR repository
                 echo "Pushing frontend Docker image to the frontend ECR repository"
                 docker push $FRONTEND_REPO:$TAG 
-
+                
+                # Authenticate Docker with The Backend ECR repo 
+                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $BACKEND_REPO
                 # Push The Backend Image to the backend ECR repositor
                 echo "Pushing backend Docker image. to the backend ECR repository"
                 docker push $BACKEND_REPO:$TAG
