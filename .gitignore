@@ -39,3 +39,4 @@ terraform.rc
 *.tfstate
 *.tfstate.backup
 crash.log
+*.pem 
