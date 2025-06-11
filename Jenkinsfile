@@ -75,6 +75,7 @@ pipeline {
                 cd ..
                 cd infra
                 terraform destroy -auto-approve
+                docker rmi `docker image ls | grep "end-repo" | awk '{print $1}'`
                 '''
             }
         }
