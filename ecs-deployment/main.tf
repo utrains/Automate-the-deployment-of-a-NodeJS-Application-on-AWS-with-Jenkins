@@ -86,7 +86,7 @@ data "aws_iam_role" "execution_role" {
   name = "${var.project_name}-ecs-execution-role"
 }
 
-# ~~~~~~~~~~~~ Creating ECS Task Definition for the backend services~~~~~~~~~
+# ~~~~~~~~~~~~ Creating ECS Task Definition for the backend services ~~~~~~~~~
 resource "aws_ecs_task_definition" "backend_task_definition" {
     family = var.backend_app_name
     network_mode = "awsvpc"
@@ -121,28 +121,6 @@ resource "aws_ecs_task_definition" "backend_task_definition" {
       operating_system_family = "LINUX"
       cpu_architecture = "X86_64"
     }
-}
-
-resource "aws_ecs_service" "backend_svc" {
-    name = "${var.backend_app_name}-svc"
-    cluster = data.aws_ecs_cluster.cluster.id
-    launch_type = "FARGATE"
-    task_definition = aws_ecs_task_definition.backend_task_definition.arn
-    desired_count = 4
-
-    network_configuration {
-      security_groups = [ data.aws_security_group.backend_sg.id]
-      subnets = [data.aws_subnet.public1.id, data.aws_subnet.public2.id]
-      assign_public_ip = true
-    }
-
-    load_balancer {
-      target_group_arn = data.aws_alb_target_group.backend_tg.id
-      container_name = var.backend_app_name
-      container_port = var.backend_port
-      
-    }
-  
 }
 
 # ~~~~~~~~~~~~ Creating ECS Task Definition for the services~~~~~~~~~
@@ -181,6 +159,32 @@ resource "aws_ecs_task_definition" "frontend_task_definition" {
       cpu_architecture = "X86_64"
     }
 }
+
+# ~~~~~~~~~~~~ Creating The backend ECS Cservice ~~~~~~~~~
+
+resource "aws_ecs_service" "backend_svc" {
+    name = "${var.backend_app_name}-svc"
+    cluster = data.aws_ecs_cluster.cluster.id
+    launch_type = "FARGATE"
+    task_definition = aws_ecs_task_definition.backend_task_definition.arn
+    desired_count = 4
+
+    network_configuration {
+      security_groups = [ data.aws_security_group.backend_sg.id]
+      subnets = [data.aws_subnet.public1.id, data.aws_subnet.public2.id]
+      assign_public_ip = true
+    }
+
+    load_balancer {
+      target_group_arn = data.aws_alb_target_group.backend_tg.id
+      container_name = var.backend_app_name
+      container_port = var.backend_port
+      
+    }
+  
+}
+
+# ~~~~~~~~~~~~ Creating The frontend ECS Cservice ~~~~~~~~~
 
 resource "aws_ecs_service" "frontend_svc" {
     name = var.frontend_app_name
